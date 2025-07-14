@@ -117,3 +117,7 @@ Thumbs.db
 *.jpg
 *.jpeg
 *.png
+
+# Never ignore anything inside src
+!src/
+!src/**/*
