@@ -1,10 +1,12 @@
 # ===================================================================
 # Edge Node Performance Metrics Plotting System
 # ===================================================================
-# This script reads CSV files containing execution metrics collected
-# from multiple edge nodes. It computes mean values and 95% confidence
-# intervals, and generates high-resolution bar plots comparing
-# performance across different machines and functions.
+# This script reads CSV files containing execution metrics collected from multiple edge nodes.
+# It computes mean values and 95% confidence intervals, and generates high-resolution bar plots comparing performance across different machines and functions.
+#
+# The script is structured to automate the analysis and visualization of distributed performance data, supporting both single and parallel execution scenarios.
+# 
+# Using pandas and matplotlib enables efficient data manipulation and high-quality plotting, while the modular configuration allows easy extension to new nodes or metrics.
 # ===================================================================
 
 import os
@@ -14,8 +16,11 @@ import numpy as np
 from scipy import stats
 
 # ===================================================================
-# Configuration for CSV file paths per machine (single and parallel)
-# Organizes data files for ease of automated processing.
+# CONFIGURATION SECTION
+#
+# Machine file paths and plotting parameters are centralized for maintainability and scalability.
+# 
+# This structure allows for easy updates when adding new machines or changing plot styles.
 # ===================================================================
 machine_files = {
     "172.16.6.119": "172_16_6_119/172_16_6_119.csv",
@@ -45,18 +50,19 @@ metrics = {
     "Memory Usage (%)": "Memory Usage (%)"
 }
 
-# ===================================================================
-# Plot and file system configuration
-# ===================================================================
 base_dir = os.path.dirname(os.path.abspath(__file__))
-
 DPI = 300
 FIGURE_WIDTH = 12
 FIGURE_HEIGHT = 6
 
 # ===================================================================
-# Read CSV files into dictionaries separating single and parallel runs
-# This structure allows straightforward comparative plotting.
+# DATA LOADING SECTION
+#
+# Reads CSV files into dictionaries separating single and parallel runs.
+# 
+# Data is organized by machine and execution type for straightforward comparative plotting.
+# 
+# This approach supports flexible analysis and avoids hardcoding data paths in plotting logic.
 # ===================================================================
 single_run_data = {}
 parallel_run_data = {}
@@ -71,10 +77,12 @@ for machine, rel_file in machine_files.items():
         else:
             single_run_data[machine] = df
 
-
 # ===================================================================
-# Compute mean and 95% confidence interval for a numeric dataset
-# This is used to generate error bars in the plots.
+# STATISTICS SECTION
+#
+# Computes mean and 95% confidence interval for a numeric dataset.
+# 
+# This is used to generate error bars in the plots, providing statistical context for performance comparisons.
 # ===================================================================
 def compute_95_confidence_interval(data):
     data = np.array(data)
@@ -85,10 +93,12 @@ def compute_95_confidence_interval(data):
     margin_of_error = t_critical * sem
     return mean, margin_of_error
 
-
 # ===================================================================
-# Human-friendly labels for edge nodes including hardware specs
-# Displayed on X-axis of plots for easy interpretation.
+# LABELS AND PLOTTING SECTION
+#
+# Human-friendly labels and consistent machine order improve plot readability and interpretability.
+# 
+# Including hardware specs in labels helps contextualize performance differences.
 # ===================================================================
 machine_labels = {
     "172.16.6.119": "Edge node 1\n2 vCPU, 2GB RAM",
@@ -98,13 +108,13 @@ machine_labels = {
     "192.168.1.19": "Edge node 5\n8 vCPU, 15.6GB RAM"
 }
 
-
 # ===================================================================
-# Generate bar plots comparing performance across edge nodes.
-# This function handles:
-# - preparing data grouped by machine and function
-# - computing mean and confidence intervals
-# - generating and saving high-resolution PNG plots.
+# Generates bar plots comparing performance across edge nodes.
+# Handles data grouping, statistics, and high-resolution PNG output.
+# 
+# Modular plotting function allows reuse for both single and parallel execution data.
+# 
+# Error bars and consistent formatting ensure scientific rigor and publication-quality visuals.
 # ===================================================================
 def plot_group(data_dict, group_name):
     # Consistent machine order for X-axis across all plots
@@ -178,9 +188,12 @@ def plot_group(data_dict, group_name):
         plt.close()
         print(f"High-resolution PNG plot saved: {file_path} (DPI: {DPI})")
 
-
 # ===================================================================
-# Main execution: generate plots for single and parallel executions
+# MAIN EXECUTION SECTION
+#
+# Generates plots for both single and parallel executions.
+# 
+# Automating this step ensures all relevant comparisons are visualized without manual intervention.
 # ===================================================================
 plot_group(single_run_data, "Single Executions")
 plot_group(parallel_run_data, "Parallel Executions")

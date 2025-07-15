@@ -1,10 +1,14 @@
 # ===================================================================
 # Docker Parallel Performance Monitor
 # ===================================================================
-# This script runs multiple Docker containers in parallel, each
-# executing a different computational workload. It monitors their
-# CPU and memory usage in real-time and logs performance metrics
-# to a CSV file for later analysis.
+# This script runs multiple Docker containers in parallel, each executing a different computational workload.
+# It monitors their CPU and memory usage in real-time and logs performance metrics to a CSV file for later analysis.
+#
+# The script is designed to simulate a high-load environment by running diverse workloads in parallel Docker containers.
+# This allows for benchmarking and comparative analysis of resource usage across different applications and container images.
+#
+# Using threads for monitoring allows us to capture real-time resource usage without blocking the main execution flow.
+# The choice of CSV for logging ensures compatibility with common data analysis tools.
 # ===================================================================
 
 import docker
@@ -19,6 +23,9 @@ import psutil
 # Monitors a container's CPU and memory usage in real-time.
 # Runs inside a separate thread until the container stops.
 # Updates a shared stats_data dictionary with the latest metrics.
+#
+# We use the Docker API's streaming stats to get up-to-date metrics, and psutil to supplement with host-level data.
+# This hybrid approach gives a more complete picture of both container and host resource usage.
 # ===================================================================
 def monitor_container_resources(container, stats_data):
     cpu_usage = 0.0
@@ -73,9 +80,11 @@ def monitor_container_resources(container, stats_data):
 
 
 # ===================================================================
-# Writes performance metrics to a CSV file.
+#Writes performance metrics to a CSV file.
 # Creates a header row if the file does not exist yet.
 # Each record includes a timestamp for chronological analysis.
+#
+# Appending to CSV allows for incremental data collection across multiple runs, supporting long-term benchmarking.
 # ===================================================================
 def write_metrics_to_csv(data, filename="parallel_metrics.csv"):
     file_exists = os.path.isfile(filename)
@@ -107,6 +116,10 @@ def write_metrics_to_csv(data, filename="parallel_metrics.csv"):
 # Runs a single container with specified parameters and monitors it.
 # Launches a thread to monitor its resource usage while executing.
 # After the container finishes, writes metrics to the CSV file.
+#
+# The mapping from image tags to scripts allows for flexible extension to new workloads.
+# 
+# We remove containers after execution to avoid resource leaks and keep the Docker environment clean.
 # ===================================================================
 def run_and_monitor(client, image_tag, input_value, function_id):
     print(f"Starting container {function_id}...")
@@ -195,8 +208,11 @@ def run_and_monitor(client, image_tag, input_value, function_id):
 
 # ===================================================================
 # Main execution loop
-# Runs multiple containers simultaneously in N iterations to simulate
-# parallel workloads and collect performance data under load.
+# Runs multiple containers simultaneously in N iterations to simulate parallel workloads and collect performance data under load.
+#
+# The use of a fixed list of functions and images ensures reproducibility of experiments.
+# 
+# Running N iterations increases statistical robustness of the collected metrics.
 # ===================================================================
 def main():
     client = docker.from_env(timeout=300)  # Set timeout to 5 minutes
@@ -233,7 +249,6 @@ def main():
         print()
 
     print("Simultaneous execution completed. Metrics saved to parallel_metrics.csv.")
-
 
 if __name__ == "__main__":
     main()
